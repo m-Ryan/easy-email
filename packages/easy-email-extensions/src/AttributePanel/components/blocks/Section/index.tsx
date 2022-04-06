@@ -2,56 +2,45 @@ import React from 'react';
 import { Padding } from '@extensions/AttributePanel/components/attributes/Padding';
 import { Background } from '@extensions/AttributePanel/components/attributes/Background';
 import { Border } from '@extensions/AttributePanel/components/attributes/Border';
-import { SwitchField } from '@extensions/components/Form';
-import { useEffect } from 'react';
 import { useCallback } from 'react';
 import { AttributesPanelWrapper } from '@extensions/AttributePanel/components/attributes/AttributesPanelWrapper';
-import { Collapse, Grid, Space } from '@arco-design/web-react';
-import { Stack, TextStyle, useBlock, useFocusIdx } from 'easy-email-editor';
+import { Collapse, Grid, Space, Switch } from '@arco-design/web-react';
+import { Stack, useBlock } from 'easy-email-editor';
 import { BasicType, BlockManager } from 'easy-email-core';
 import { ClassName } from '../../attributes/ClassName';
 
 export function Section() {
-  const { focusIdx } = useFocusIdx();
   const { focusBlock, setFocusBlock } = useBlock();
 
   const noWrap = focusBlock?.data.value.noWrap;
 
-  const changeNoWrap = useCallback(
-    (noWrap: boolean) => {
-      if (!focusBlock) return;
-
-      if (noWrap) {
-        const children = [...focusBlock.children];
-        for (let i = 0; i < children.length; i++) {
-          const child = children[i];
-          if (!child) continue;
-          if (child.type === BasicType.GROUP) {
-            children.splice(i, 1, ...child.children);
-          }
-        }
-        focusBlock.children = [
-          BlockManager.getBlockByType(BasicType.GROUP)!.create({
-            children: children,
-          }),
-        ];
-      } else {
-        if (
-          focusBlock.children.length === 1 &&
-          focusBlock.children[0].type === BasicType.GROUP
-        ) {
-          focusBlock.children = focusBlock.children[0]?.children || [];
+  const onChange = useCallback((checked) => {
+    if (!focusBlock) return;
+    focusBlock.data.value.noWrap = checked;
+    if (checked) {
+      const children = [...focusBlock.children];
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        if (!child) continue;
+        if (child.type === BasicType.GROUP) {
+          children.splice(i, 1, ...child.children);
         }
       }
-      setFocusBlock({ ...focusBlock });
-    },
-    [focusBlock, setFocusBlock]
-  );
-
-  useEffect(() => {
-    changeNoWrap(noWrap);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [noWrap]);
+      focusBlock.children = [
+        BlockManager.getBlockByType(BasicType.GROUP)!.create({
+          children: children,
+        }),
+      ];
+    } else {
+      if (
+        focusBlock.children.length === 1 &&
+        focusBlock.children[0].type === BasicType.GROUP
+      ) {
+        focusBlock.children = focusBlock.children[0]?.children || [];
+      }
+    }
+    setFocusBlock({ ...focusBlock });
+  }, [focusBlock, setFocusBlock]);
 
   return (
     <AttributesPanelWrapper style={{ padding: 0 }}>
@@ -60,13 +49,20 @@ export function Section() {
           <Space direction='vertical'>
             <Grid.Row>
               <Grid.Col span={12}>
-                <SwitchField
-                  label='Group'
-                  name={`${focusIdx}.data.value.noWrap`}
-                  helpText='Prevent columns from stacking on mobile.'
+
+                <label
+
+                  style={{ width: '100%', display: 'flex' }}
+                >
+
+                  <div style={{ flex: 1 }}>Group</div>
+                </label>
+
+                <Switch
+                  checked={noWrap}
                   checkedText='True'
                   uncheckedText='False'
-                  inline
+                  onChange={onChange}
                 />
               </Grid.Col>
               <Grid.Col span={12} />
