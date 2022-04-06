@@ -19,3 +19,4 @@ export { Navbar } from './Navbar';
 export { Social } from './Social';
 export { Table } from './Table';
 export { Template } from './Template';
+export { default as MjmlBlock } from './MjmlBlock';
