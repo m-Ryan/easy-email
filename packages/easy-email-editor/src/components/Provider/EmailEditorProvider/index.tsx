@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import setFieldTouched from 'final-form-set-field-touched';
 import { FocusBlockLayoutProvider } from '../FocusBlockLayoutProvider';
 
-export interface EmailEditorProviderProps<T extends IEmailTemplate = any>
+export interface EmailEditorProviderProps<T extends IEmailTemplate = IEmailTemplate>
   extends PropsProviderProps {
   data: T;
   children: (
