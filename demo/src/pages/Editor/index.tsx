@@ -1,39 +1,28 @@
 /* eslint-disable react/jsx-wrap-multilines */
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
-import template from '@demo/store/template';
-import { useAppSelector } from '@demo/hooks/useAppSelector';
-import { useLoading } from '@demo/hooks/useLoading';
 import {
   Button,
   ConfigProvider,
   Dropdown,
   Menu,
-  Message,
   PageHeader,
-  Select,
 } from '@arco-design/web-react';
 import { IconLeft } from '@arco-design/web-react/icon';
-import { useQuery } from '@demo/hooks/useQuery';
-import { useHistory } from 'react-router-dom';
 import { cloneDeep } from 'lodash';
-import { Loading } from '@demo/components/loading';
 import mjml from 'mjml-browser';
-import services from '@demo/services';
 import { saveAs } from 'file-saver';
+import services from '@demo/services';
 import {
-  BlockAvatarWrapper,
   EmailEditor,
   EmailEditorProvider,
   IEmailTemplate,
+  Stack,
 } from 'easy-email-editor';
-
-import { Stack } from '@demo/components/Stack';
-import { pushEvent } from '@demo/utils/pushEvent';
-import { UserStorage } from '@demo/utils/user-storage';
-
-import { AdvancedType, IBlockData, JsonToMjml } from 'easy-email-core';
-import { ExtensionProps, SimpleLayout } from 'easy-email-extensions';
+import { IBlockData, JsonToMjml } from 'easy-email-core';
+import { SimpleLayout } from 'easy-email-extensions';
+import templateJson from '@demo/template.json';
+import { setSeo } from '@demo/utils/seo';
+import { useHistory } from 'react-router-dom';
 
 import 'easy-email-editor/lib/style.css';
 import 'easy-email-extensions/lib/style.css';
@@ -41,181 +30,188 @@ import blueTheme from '@arco-themes/react-easy-email-theme/css/arco.css?inline';
 
 import enUS from '@arco-design/web-react/es/locale/en-US';
 
-import { useShowCommercialEditor } from '@demo/hooks/useShowCommercialEditor';
 import { useWindowSize } from 'react-use';
 
-const defaultCategories: ExtensionProps['categories'] = [
-  {
-    label: 'Content',
-    active: true,
-    blocks: [
-      {
-        type: AdvancedType.TEXT,
-      },
-      {
-        type: AdvancedType.IMAGE,
-      },
-      {
-        type: AdvancedType.BUTTON,
-      },
-      {
-        type: AdvancedType.SOCIAL,
-      },
-      {
-        type: AdvancedType.DIVIDER,
-      },
-      {
-        type: AdvancedType.SPACER,
-      },
-      {
-        type: AdvancedType.HERO,
-      },
-      {
-        type: AdvancedType.WRAPPER,
-      },
-      {
-        type: AdvancedType.TABLE,
-      },
-    ],
-  },
-  {
-    label: 'Layout',
-    active: true,
-    displayType: 'column',
-    blocks: [
-      {
-        title: '2 columns',
-        payload: [
-          ['50%', '50%'],
-          ['33%', '67%'],
-          ['67%', '33%'],
-          ['25%', '75%'],
-          ['75%', '25%'],
-        ],
-      },
-      {
-        title: '3 columns',
-        payload: [
-          ['33.33%', '33.33%', '33.33%'],
-          ['25%', '25%', '50%'],
-          ['50%', '25%', '25%'],
-        ],
-      },
-      {
-        title: '4 columns',
-        payload: [['25%', '25%', '25%', '25%']],
-      },
-    ],
-  },
-];
+const PRO_URL = 'https://www.easyemail.pro/?utm_source=easy-email-demo&utm_medium=editor-header';
+const HEADER_HEIGHT = 60;
 
 export default function Editor() {
-  const { featureEnabled } = useShowCommercialEditor();
-  const dispatch = useDispatch();
-  const history = useHistory();
-  const templateData = useAppSelector('template');
   const { width } = useWindowSize();
   const compact = width > 1600;
-  const { id, userId } = useQuery();
-  const loading = useLoading(template.loadings.fetchById);
+  const history = useHistory();
 
   useEffect(() => {
-    if (id) {
-      if (!userId) {
-        UserStorage.getAccount().then(account => {
-          dispatch(template.actions.fetchById({ id: +id, userId: account.user_id }));
-        });
-      } else {
-        dispatch(template.actions.fetchById({ id: +id, userId: +userId }));
-      }
-    } else {
-      dispatch(template.actions.fetchDefaultTemplate(undefined));
-    }
-
-    return () => {
-      dispatch(template.actions.set(null));
-    };
-  }, [dispatch, id, userId]);
+    setSeo({
+      title: 'Try Easy Email editor - Drag-and-drop MJML email builder',
+      description:
+        'Try the Easy Email open-source editor with a fixed MJML template. Build and inspect responsive email content in a React drag-and-drop editor.',
+      path: '/editor',
+      keywords:
+        'try email editor, MJML editor demo, React email builder demo, drag and drop email editor',
+    });
+  }, []);
 
   const onUploadImage = async (blob: Blob) => {
     return services.common.uploadByQiniu(blob);
   };
 
-  const onExportMJML = (values: IEmailTemplate) => {
-    const mjmlString = JsonToMjml({
-      data: values.content,
-      mode: 'production',
-      context: values.content,
-    });
-
-    pushEvent({ event: 'MJMLExport', payload: { values } });
-    navigator.clipboard.writeText(mjmlString);
-    saveAs(new Blob([mjmlString], { type: 'text/mjml' }), 'easy-email.mjml');
-  };
-
-  const onExportHTML = (values: IEmailTemplate) => {
-    const mjmlString = JsonToMjml({
-      data: values.content,
-      mode: 'production',
-      context: values.content,
-    });
-
-    const html = mjml(mjmlString, {}).html;
-
-    pushEvent({ event: 'HTMLExport', payload: { values } });
-    navigator.clipboard.writeText(html);
-    saveAs(new Blob([html], { type: 'text/html' }), 'easy-email.html');
-  };
-
-  const onExportJSON = (values: IEmailTemplate) => {
-    navigator.clipboard.writeText(JSON.stringify(values, null, 2));
-    saveAs(
-      new Blob([JSON.stringify(values, null, 2)], { type: 'application/json' }),
-      'easy-email.json',
-    );
-  };
-
-  const initialValues: IEmailTemplate | null = useMemo(() => {
-    if (!templateData) return null;
-    const sourceData = cloneDeep(templateData.content) as IBlockData;
+  const initialValues: IEmailTemplate = useMemo(() => {
+    const sourceData = JSON.parse(templateJson.content.content) as IBlockData;
     return {
-      ...templateData,
-      content: sourceData, // replace standard block
+      ...templateJson,
+      subject: templateJson.title,
+      subTitle: templateJson.summary,
+      content: cloneDeep(sourceData),
     };
-  }, [templateData]);
+  }, []);
 
   const onSubmit = useCallback(
     async (values: IEmailTemplate) => {
       console.log(values);
     },
-    [dispatch, history, id, initialValues],
+    [],
   );
 
-  if (!templateData && loading) {
-    return (
-      <Loading loading={loading}>
-        <div style={{ height: '100vh' }} />
-      </Loading>
-    );
-  }
+  const getMjmlString = useCallback((values: IEmailTemplate) => {
+    return JsonToMjml({
+      data: values.content,
+      mode: 'production',
+      context: values.content,
+    });
+  }, []);
 
-  if (!initialValues) return null;
+  const onExportMJML = useCallback(
+    (values: IEmailTemplate) => {
+      const mjmlString = getMjmlString(values);
+      navigator.clipboard?.writeText(mjmlString);
+      saveAs(new Blob([mjmlString], { type: 'text/mjml' }), 'easy-email.mjml');
+    },
+    [getMjmlString],
+  );
+
+  const onExportHTML = useCallback(
+    (values: IEmailTemplate) => {
+      const html = mjml(getMjmlString(values), {}).html;
+      navigator.clipboard?.writeText(html);
+      saveAs(new Blob([html], { type: 'text/html' }), 'easy-email.html');
+    },
+    [getMjmlString],
+  );
+
+  const onExportJSON = useCallback((values: IEmailTemplate) => {
+    const json = JSON.stringify(values, null, 2);
+    navigator.clipboard?.writeText(json);
+    saveAs(new Blob([json], { type: 'application/json' }), 'easy-email.json');
+  }, []);
 
   return (
     <ConfigProvider locale={enUS}>
       <div>
         <style>{blueTheme}</style>
         <EmailEditorProvider
-          height={'calc(100vh - 68px)'}
+          height={`calc(100vh - ${HEADER_HEIGHT}px)`}
           data={initialValues}
           onUploadImage={onUploadImage}
           onSubmit={onSubmit}
           dashed={false}
           compact={compact}
         >
-          {({ values }, { submit, restart }) => {
+          {({ values }) => {
             return (
               <>
+                <PageHeader
+                  style={{
+                    height: HEADER_HEIGHT,
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: '#fff',
+                    padding: '10px 28px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  }}
+                  backIcon={
+                    <IconLeft
+                      style={{
+                        color: '#fff',
+                        fontSize: 20,
+                        fontWeight: 'bold',
+                      }}
+                    />
+                  }
+                  title={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
+                      <span style={{ color: '#fff', fontWeight: 800 }}>Edit</span>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12,
+                          color: '#fff',
+                          fontSize: 13,
+                          fontWeight: 700,
+                          opacity: 0.96,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        <span>🚀 Try Easy Email Pro</span>
+                        <span>✅ Cross-browser support</span>
+                        <span>✅ React 19 support</span>
+                        <span>✅ Desktop &amp; Mobile Email Preview</span>
+                        <span>✅ More advanced features</span>
+                      </div>
+                    </div>
+                  }
+                  onBack={() => history.push('/')}
+                  extra={
+                    <Stack alignment='center'>
+                      <Dropdown
+                        droplist={
+                          <Menu>
+                            <Menu.Item
+                              key='Export MJML'
+                              onClick={() => onExportMJML(values)}
+                            >
+                              Export MJML
+                            </Menu.Item>
+                            <Menu.Item
+                              key='Export HTML'
+                              onClick={() => onExportHTML(values)}
+                            >
+                              Export HTML
+                            </Menu.Item>
+                            <Menu.Item
+                              key='Export JSON'
+                              onClick={() => onExportJSON(values)}
+                            >
+                              Export JSON
+                            </Menu.Item>
+                          </Menu>
+                        }
+                      >
+                        <Button
+                          style={{
+                            background: 'rgba(255,255,255,0.2)',
+                            color: '#fff',
+                            border: 'none',
+                            fontWeight: 800,
+                          }}
+                        >
+                          Export
+                        </Button>
+                      </Dropdown>
+                      <Button
+                        href={PRO_URL}
+                        target='_blank'
+                        style={{
+                          background: '#fff',
+                          color: '#667eea',
+                          border: 'none',
+                          fontWeight: 800,
+                        }}
+                      >
+                        Try Pro Version
+                      </Button>
+                    </Stack>
+                  }
+                />
                 <SimpleLayout>
                   <EmailEditor />
                 </SimpleLayout>

@@ -8,11 +8,54 @@
     />
     <meta
       name="description"
-      content="Easy email is developed based on the MJML and has very good compatibility. At the same time, it can generate code through drag-and-drop editing."
+      content="Easy Email is an open-source React email editor for drag-and-drop MJML email building. Try the editor, then upgrade to Easy Email Pro for a self-hosted SDK, custom blocks, AI assistant, and SaaS-ready workflows."
+    />
+    <meta
+      name="keywords"
+      content="open source email editor, React email editor, MJML email builder, drag and drop email editor, self-hosted email editor SDK, Easy Email Pro"
+    />
+    <meta
+      property="og:title"
+      content="Easy Email - Open-source React email editor with MJML output"
+    />
+    <meta
+      property="og:description"
+      content="Try the open-source React email editor, then explore Easy Email Pro for a self-hosted commercial email editor SDK."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Easy Email - Open-source React email editor with MJML output"
+    />
+    <meta
+      name="twitter:description"
+      content="Drag-and-drop MJML email editing for React, with a commercial Easy Email Pro SDK path for SaaS products."
     />
 
     <%- buildTime %>
-    <title>easy email</title>
+    <title>Easy Email - Open-source React email editor with MJML output</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Easy Email",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web",
+        "description": "Open-source React email editor with drag-and-drop editing and MJML output.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "isRelatedTo": {
+          "@type": "SoftwareApplication",
+          "name": "Easy Email Pro",
+          "url": "https://www.easyemail.pro/",
+          "applicationCategory": "DeveloperApplication"
+        }
+      }
+    </script>
     <!-- Google Tag Manager -->
     <script>
       (function (w, d, s, l, i) {
@@ -54,19 +97,6 @@
     <script
       type="module"
       src="/src/main.tsx"
-    ></script>
-    <script
-      async
-      data-name="BMC-Widget"
-      data-cfasync="false"
-      src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js"
-      data-id="easyemail"
-      data-description="Support me on Buy me a coffee!"
-      data-message="Thanks for your coffee."
-      data-color="#FF813F"
-      data-position="Right"
-      data-x_margin="18"
-      data-y_margin="18"
     ></script>
   </body>
 </html>

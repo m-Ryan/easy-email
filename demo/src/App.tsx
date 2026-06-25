@@ -5,8 +5,8 @@ import Page from '@demo/components/Page';
 import store from '@demo/store';
 import '@demo/styles/common.scss';
 import { history } from './utils/history';
-import Home from '@demo/pages/Home';
 
+const Home = React.lazy(() => import('@demo/pages/Home'));
 const Editor = React.lazy(() => import('@demo/pages/Editor'));
 
 function App() {
